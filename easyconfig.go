@@ -19,17 +19,19 @@ type Configurator struct {
 // Parse configuration values. tgt should be a pointer to a structure to be
 // filled using cstruct. If nil, no structure is registered using cstruct.
 func (cfg *Configurator) Parse(tgt interface{}) error {
-	if tgt != nil {
+	if tgt != nil && cfg.ProgramName != "" {
 		configurable.Register(cstruct.MustNew(tgt, cfg.ProgramName))
 	}
 
 	adaptflag.Adapt()
 	adaptenv.Adapt()
 	flag.Parse()
-	err := adaptconf.Load(cfg.ProgramName)
-	if err != nil {
-		return err
-	}
+  if cfg.ProgramName != "" {
+    err := adaptconf.Load(cfg.ProgramName)
+    if err != nil {
+      return err
+    }
+  }
 
 	cfg.configFilePath = adaptconf.LastConfPath()
 	return nil
