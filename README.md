@@ -21,6 +21,9 @@ registers them with the standard flag package and the
 [pflag](https://github.com/ogier/pflag) package. You can also use it with any
 flag package you like if it implements a similar registration interface.
 
+The `easyconfig` package itself provides a simple struct-based configuration
+interface; see the documentation in the examples.
+
 Licence
 -------
 
