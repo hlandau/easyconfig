@@ -1,7 +1,7 @@
 package main
 
-import _ "gopkg.in/hlandau/configurable.v0/exampleapp/examplelib"
-import "gopkg.in/hlandau/configurable.v0/adaptflag"
+import _ "gopkg.in/hlandau/configurable.v1/exampleapp/examplelib"
+import "gopkg.in/hlandau/configurable.v1/adaptflag"
 
 //import "flag"
 import flag "github.com/ogier/pflag"

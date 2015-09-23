@@ -1,6 +1,6 @@
 package adaptenv
 
-import "gopkg.in/hlandau/configurable.v0"
+import "gopkg.in/hlandau/configurable.v1"
 import "os"
 
 // Loads values from environment variables into any configurables which expose

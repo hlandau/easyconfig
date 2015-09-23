@@ -1,9 +1,9 @@
 package main
 
-import "gopkg.in/hlandau/configurable.v0"
-import "gopkg.in/hlandau/configurable.v0/cstruct"
-import "gopkg.in/hlandau/configurable.v0/adaptflag"
-import "gopkg.in/hlandau/configurable.v0/adaptconf"
+import "gopkg.in/hlandau/configurable.v1"
+import "gopkg.in/hlandau/configurable.v1/cstruct"
+import "gopkg.in/hlandau/configurable.v1/adaptflag"
+import "gopkg.in/hlandau/configurable.v1/adaptconf"
 import flag "github.com/ogier/pflag"
 import "fmt"
 

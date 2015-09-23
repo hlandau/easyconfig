@@ -22,7 +22,7 @@ import "reflect"
 import "strings"
 import "regexp"
 import "strconv"
-import "gopkg.in/hlandau/configurable.v0"
+import "gopkg.in/hlandau/configurable.v1"
 
 type group struct {
 	configurables []configurable.Configurable

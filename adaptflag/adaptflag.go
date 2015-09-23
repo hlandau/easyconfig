@@ -5,7 +5,7 @@ package adaptflag
 import "fmt"
 import "flag"
 import "github.com/ogier/pflag"
-import "gopkg.in/hlandau/configurable.v0"
+import "gopkg.in/hlandau/configurable.v1"
 import "strings"
 
 func name(c configurable.Configurable) (name string, ok bool) {

@@ -1,7 +1,7 @@
 package cflag_test
 
-import "gopkg.in/hlandau/configurable.v0/cflag"
-import "gopkg.in/hlandau/configurable.v0/adaptflag"
+import "gopkg.in/hlandau/configurable.v1/cflag"
+import "gopkg.in/hlandau/configurable.v1/adaptflag"
 import flag "github.com/ogier/pflag"
 import "fmt"
 

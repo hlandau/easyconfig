@@ -12,7 +12,7 @@ import "fmt"
 import "strconv"
 import "regexp"
 import "strings"
-import "gopkg.in/hlandau/configurable.v0"
+import "gopkg.in/hlandau/configurable.v1"
 
 // Group
 
