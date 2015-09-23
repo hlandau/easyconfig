@@ -177,10 +177,10 @@ func AdaptWithFunc(f AdaptFunc) {
 func Adapt() {
 	AdaptWithFunc(func(info Info) {
 		dpn := DottedPath(info.Path)
-    if len(dpn) > 0 {
-      dpn += "."
-    }
-    dpn += info.Name
+		if len(dpn) > 0 {
+			dpn += "."
+		}
+		dpn += info.Name
 		flag.Var(info.Value, dpn, info.Usage)
 		pflag.Var(info.Value, dpn, info.Usage)
 	})
