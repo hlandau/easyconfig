@@ -1,6 +1,6 @@
 package examplelib
 
-import "gopkg.in/hlandau/configurable.v1/cflag"
+import "gopkg.in/hlandau/easyconfig.v1/cflag"
 
 var g = cflag.NewGroup(nil, "Server Options")
 var bindFlag = cflag.String(g, "bind", "Address to bind to (e.g. 0.0.0.0:53)", ":53")
