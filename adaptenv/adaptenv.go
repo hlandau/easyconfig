@@ -1,3 +1,4 @@
+// Package adaptenv configures registers configurables from environment variables.
 package adaptenv
 
 import "gopkg.in/hlandau/configurable.v1"
