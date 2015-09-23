@@ -48,3 +48,21 @@ func (cfg *Configurator) ParseFatal(tgt interface{}) {
 func (cfg *Configurator) ConfigFilePath() string {
 	return cfg.configFilePath
 }
+
+// Like Configurator.Parse. cfg may be nil.
+func Parse(cfg *Configurator, tgt interface{}) error {
+	if cfg == nil {
+		cfg = &Configurator{}
+	}
+
+	return cfg.Parse(tgt)
+}
+
+// Like Configurator.ParseFatal. cfg may be nil.
+func ParseFatal(cfg *Configurator, tgt interface{}) {
+	if cfg == nil {
+		cfg = &Configurator{}
+	}
+
+	cfg.ParseFatal(tgt)
+}
