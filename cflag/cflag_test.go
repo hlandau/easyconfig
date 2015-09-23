@@ -8,10 +8,10 @@ import "fmt"
 func Example() {
 	var (
 		g           = cflag.NewGroup(nil, "Program Options")
-		bindFlag    = cflag.String(g, "bind", "Address to bind server to (e.g. :80)", ":80")
-		fooFlag     = cflag.String(g, "foo", "Some flag", "")
-		barFlag     = cflag.Int(g, "bar", "Some other flag", 42)
-		doStuffFlag = cflag.Bool(g, "doStuff", "Do stuff?", false)
+    bindFlag    = cflag.String(g, "bind", ":80", "Address to bind server to (e.g. :80)")
+		fooFlag     = cflag.String(g, "foo", "", "Some flag")
+		barFlag     = cflag.Int(g, "bar", 42, "Some other flag")
+		doStuffFlag = cflag.Bool(g, "doStuff", false, "Do stuff?")
 	)
 
 	adaptflag.Adapt()

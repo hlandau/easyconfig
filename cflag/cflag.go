@@ -129,17 +129,17 @@ func (sf *StringFlag) CfGetPriority() configurable.Priority {
 
 // Creates a flag of type string. The variable referenced by pointer v is used as
 // the storage location for the value of the configurable.
-func StringVar(reg Registerable, v *string, name, summaryLine, defaultValue string) *StringFlag {
+func StringVar(reg Registerable, v *string, name, defaultValue, summaryLine string) *StringFlag {
 	sf := &StringFlag{
 		name:         name,
 		summaryLine:  summaryLine,
 		defaultValue: defaultValue,
 		curValue:     defaultValue,
-    curValuep:    v,
+		curValuep:    v,
 	}
-  if sf.curValuep == nil {
-    sf.curValuep = &sf.curValue
-  }
+	if sf.curValuep == nil {
+		sf.curValuep = &sf.curValue
+	}
 
 	register(reg, sf)
 	return sf
@@ -150,8 +150,8 @@ func StringVar(reg Registerable, v *string, name, summaryLine, defaultValue stri
 // reg: See package-level documentation.
 //
 // summaryLine: One-line usage summary.
-func String(reg Registerable, name, summaryLine, defaultValue string) *StringFlag {
-  return StringVar(reg, nil, name, summaryLine, defaultValue)
+func String(reg Registerable, name, defaultValue, summaryLine string) *StringFlag {
+	return StringVar(reg, nil, name, defaultValue, summaryLine)
 }
 
 // Int
@@ -225,17 +225,17 @@ func (sf *IntFlag) CfGetPriority() configurable.Priority {
 
 // Creates a flag of type int. The variable referenced by pointer v is used as
 // the storage location for the value of the configurable.
-func IntVar(reg Registerable, v *int, name, summaryLine string, defaultValue int) *IntFlag {
+func IntVar(reg Registerable, v *int, name string, defaultValue int, summaryLine string) *IntFlag {
 	sf := &IntFlag{
 		name:         name,
 		summaryLine:  summaryLine,
 		defaultValue: defaultValue,
 		curValue:     defaultValue,
-    curValuep:    v,
+		curValuep:    v,
 	}
-  if sf.curValuep == nil {
-    sf.curValuep = &sf.curValue
-  }
+	if sf.curValuep == nil {
+		sf.curValuep = &sf.curValue
+	}
 
 	register(reg, sf)
 	return sf
@@ -246,8 +246,8 @@ func IntVar(reg Registerable, v *int, name, summaryLine string, defaultValue int
 // reg: See package-level documentation.
 //
 // summaryLine: One-line usage summary.
-func Int(reg Registerable, name, summaryLine string, defaultValue int) *IntFlag {
-  return IntVar(reg, nil, name, summaryLine, defaultValue)
+func Int(reg Registerable, name string, defaultValue int, summaryLine string) *IntFlag {
+	return IntVar(reg, nil, name, defaultValue, summaryLine)
 }
 
 // Bool
@@ -327,23 +327,23 @@ func (sf *BoolFlag) CfGetPriority() configurable.Priority {
 // reg: See package-level documentation.
 //
 // summaryLine: One-line usage summary.
-func Bool(reg Registerable, name, summaryLine string, defaultValue bool) *BoolFlag {
-  return BoolVar(reg, nil, name, summaryLine, defaultValue)
+func Bool(reg Registerable, name string, defaultValue bool, summaryLine string) *BoolFlag {
+	return BoolVar(reg, nil, name, defaultValue, summaryLine)
 }
 
 // Creates a flag of type bool. The variable referenced by pointer v is used as
 // the storage location for the value of the configurable.
-func BoolVar(reg Registerable, v *bool, name, summaryLine string, defaultValue bool) *BoolFlag {
+func BoolVar(reg Registerable, v *bool, name string, defaultValue bool, summaryLine string) *BoolFlag {
 	sf := &BoolFlag{
 		name:         name,
 		summaryLine:  summaryLine,
 		defaultValue: defaultValue,
 		curValue:     defaultValue,
-    curValuep:    v,
+		curValuep:    v,
 	}
-  if sf.curValuep == nil {
-    sf.curValuep = &sf.curValue
-  }
+	if sf.curValuep == nil {
+		sf.curValuep = &sf.curValue
+	}
 
 	register(reg, sf)
 	return sf
