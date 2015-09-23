@@ -11,7 +11,7 @@ import "gopkg.in/hlandau/easyconfig.v1/cflag"
 import "gopkg.in/hlandau/svcutils.v1/exepath"
 import "github.com/BurntSushi/toml"
 
-var confFlag = cflag.String(nil, "conf", "Configuration file path", "")
+var confFlag = cflag.String(nil, "conf", "", "Configuration file path")
 var lastConfPath string
 
 func LastConfPath() string {
