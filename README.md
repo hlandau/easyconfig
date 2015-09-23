@@ -7,6 +7,8 @@ easyconfig provides utilities for use with
 [configurable](https://github.com/hlandau/configurable). It makes it easy to
 get started with configurable using familiar interfaces.
 
+Import as: `gopkg.in/hlandau/easyconfig.v1`
+
 Packages provided
 -----------------
 
