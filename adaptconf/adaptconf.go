@@ -8,7 +8,7 @@ import "strings"
 import "path/filepath"
 import "gopkg.in/hlandau/configurable.v1"
 import "gopkg.in/hlandau/easyconfig.v1/cflag"
-import "gopkg.in/hlandau/service.v1/exepath"
+import "gopkg.in/hlandau/svcutils.v1/exepath"
 import "github.com/BurntSushi/toml"
 
 var confFlag = cflag.String(nil, "conf", "Configuration file path", "")
