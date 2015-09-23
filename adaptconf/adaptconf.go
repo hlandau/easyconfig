@@ -7,7 +7,7 @@ import "fmt"
 import "strings"
 import "path/filepath"
 import "gopkg.in/hlandau/configurable.v1"
-import "gopkg.in/hlandau/easyconfig.v0/cflag"
+import "gopkg.in/hlandau/easyconfig.v1/cflag"
 import "gopkg.in/hlandau/service.v1/exepath"
 import "github.com/BurntSushi/toml"
 
