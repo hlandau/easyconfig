@@ -9,6 +9,10 @@ import "gopkg.in/hlandau/easyconfig.v1/adaptconf"
 import "gopkg.in/hlandau/easyconfig.v1/adaptenv"
 import "flag"
 
+// This is set to the ProgramName of the first Configurator called with a
+// non-empty ProgramName.
+var ProgramName string
+
 // Easy configurator. Set the ProgramName and call Parse, passing a pointer to
 // a structure you want to fill with program-specific configuration values.
 type Configurator struct {
@@ -20,18 +24,22 @@ type Configurator struct {
 // filled using cstruct. If nil, no structure is registered using cstruct.
 func (cfg *Configurator) Parse(tgt interface{}) error {
 	if tgt != nil && cfg.ProgramName != "" {
+		if ProgramName == "" {
+			ProgramName = cfg.ProgramName
+		}
+
 		configurable.Register(cstruct.MustNew(tgt, cfg.ProgramName))
 	}
 
 	adaptflag.Adapt()
 	adaptenv.Adapt()
 	flag.Parse()
-  if cfg.ProgramName != "" {
-    err := adaptconf.Load(cfg.ProgramName)
-    if err != nil {
-      return err
-    }
-  }
+	if cfg.ProgramName != "" {
+		err := adaptconf.Load(cfg.ProgramName)
+		if err != nil {
+			return err
+		}
+	}
 
 	cfg.configFilePath = adaptconf.LastConfPath()
 	return nil
