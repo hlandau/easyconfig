@@ -59,22 +59,49 @@ func (v *value) CfGetValue() interface{} {
 func (v *value) CfSetValue(x interface{}) error {
 	xv := reflect.ValueOf(x)
 	if !xv.Type().AssignableTo(v.v.Type()) {
-		if xv.Type().Kind() != reflect.String {
-			return fmt.Errorf("not assignable with that type")
+		// Ensure that []interface{} (from e.g. TOML) can be converted to []T for some T
+		if xv.Type().Kind() == reflect.Slice && v.v.Type().Kind() == reflect.Slice {
+			// Append every element
+			for i := 0; i < xv.Len(); i++ {
+				// TODO: string coercion
+				elem := reflect.ValueOf(xv.Index(i).Interface())
+				if !elem.Type().AssignableTo(v.v.Type().Elem()) {
+					return fmt.Errorf("slice element not assignable with that type: %v, %v", v.v, elem)
+				}
+
+				v.v.Set(reflect.Append(v.v, elem))
+			}
 		}
 
-		pv, err := parseString(xv.String(), v.v.Type())
+		// Try string coercion
+		err := coercingSet(v.v, xv)
 		if err != nil {
 			return err
-		}
-
-		xv = reflect.ValueOf(pv)
-		if !xv.Type().AssignableTo(v.v.Type()) {
-			return fmt.Errorf("still not assignable with type after string conversion")
 		}
 	}
 
 	v.v.Set(xv)
+	return nil
+}
+
+func coercingSet(field reflect.Value, newValue reflect.Value) error {
+	if !newValue.Type().AssignableTo(field.Type()) {
+		if newValue.Type().Kind() != reflect.String {
+			return fmt.Errorf("not assignable with that type")
+		}
+
+		pv, err := parseString(newValue.String(), field.Type())
+		if err != nil {
+			return err
+		}
+
+		newValue = reflect.ValueOf(pv)
+		if !newValue.Type().AssignableTo(field.Type()) {
+			return fmt.Errorf("still not assignable with type after string conversion")
+		}
+	}
+
+	field.Set(newValue)
 	return nil
 }
 
@@ -185,21 +212,21 @@ func New(target interface{}, name string) (c configurable.Configurable, err erro
 		}
 
 		err = vv.CfSetValue(dfltv)
-		if err != nil {
+		if err != nil && dflt != "" {
 			panic(fmt.Sprintf("cannot set default value on field: %v", err))
 		}
 
 		g.configurables = append(g.configurables, vv)
 
 		// Do the type check now
-		switch field.Type.Kind() {
+		/*switch field.Type.Kind() {
 		case reflect.Int:
 		case reflect.String:
 		case reflect.Bool:
 		default:
 			err = fmt.Errorf("unsupported field type: %v", field.Type)
 			return
-		}
+		}*/
 	}
 
 	return g, nil

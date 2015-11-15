@@ -15,6 +15,15 @@ import "flag"
 type Configurator struct {
 	ProgramName    string
 	configFilePath string
+	inited         bool
+}
+
+func (cfg *Configurator) Init(tgt interface{}) {
+	if cfg.inited {
+		return
+	}
+
+	cfg.inited = true
 }
 
 // Parse configuration values. tgt should be a pointer to a structure to be

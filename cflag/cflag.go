@@ -77,6 +77,7 @@ type StringFlag struct {
 	name, curValue, summaryLine, defaultValue string
 	curValuep                                 *string
 	priority                                  configurable.Priority
+	onChange                                  []func(*StringFlag)
 }
 
 func (sf *StringFlag) String() string {
@@ -84,6 +85,8 @@ func (sf *StringFlag) String() string {
 }
 
 func (sf *StringFlag) CfSetValue(v interface{}) error {
+	defer sf.notify()
+
 	vs, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("value must be a string")
@@ -91,6 +94,12 @@ func (sf *StringFlag) CfSetValue(v interface{}) error {
 
 	*sf.curValuep = vs
 	return nil
+}
+
+func (sf *StringFlag) notify() {
+	for _, f := range sf.onChange {
+		f(sf)
+	}
 }
 
 func (sf *StringFlag) CfValue() interface{} {
@@ -117,6 +126,10 @@ func (sf *StringFlag) Value() string {
 // Set the flag's current value.
 func (sf *StringFlag) SetValue(value string) {
 	*sf.curValuep = value
+}
+
+func (sf *StringFlag) RegisterOnChange(f func(*StringFlag)) {
+	sf.onChange = append(sf.onChange, f)
 }
 
 func (sf *StringFlag) CfSetPriority(priority configurable.Priority) {
@@ -161,6 +174,7 @@ type IntFlag struct {
 	curValue, defaultValue int
 	curValuep              *int
 	priority               configurable.Priority
+	onChange               []func(*IntFlag)
 }
 
 func (sf *IntFlag) String() string {
@@ -168,6 +182,8 @@ func (sf *IntFlag) String() string {
 }
 
 func (sf *IntFlag) CfSetValue(v interface{}) error {
+	defer sf.notify()
+
 	vi, ok := v.(int)
 	if ok {
 		*sf.curValuep = vi
@@ -187,6 +203,12 @@ func (sf *IntFlag) CfSetValue(v interface{}) error {
 	}
 
 	return fmt.Errorf("invalid value for configurable %#v, expecting int: %v", sf.name, v)
+}
+
+func (sf *IntFlag) notify() {
+	for _, f := range sf.onChange {
+		f(sf)
+	}
 }
 
 func (sf *IntFlag) CfValue() interface{} {
@@ -213,6 +235,10 @@ func (sf *IntFlag) Value() int {
 // Set the flag's current value.
 func (sf *IntFlag) SetValue(value int) {
 	*sf.curValuep = value
+}
+
+func (sf *IntFlag) RegisterOnChange(f func(*IntFlag)) {
+	sf.onChange = append(sf.onChange, f)
 }
 
 func (sf *IntFlag) CfSetPriority(priority configurable.Priority) {
@@ -257,6 +283,7 @@ type BoolFlag struct {
 	curValue, defaultValue bool
 	curValuep              *bool
 	priority               configurable.Priority
+	onChange               []func(*BoolFlag)
 }
 
 func (sf *BoolFlag) String() string {
@@ -266,6 +293,8 @@ func (sf *BoolFlag) String() string {
 var re_no = regexp.MustCompilePOSIX(`^(00?|no?|f(alse)?)$`)
 
 func (sf *BoolFlag) CfSetValue(v interface{}) error {
+	defer sf.notify()
+
 	vb, ok := v.(bool)
 	if ok {
 		*sf.curValuep = vb
@@ -286,6 +315,12 @@ func (sf *BoolFlag) CfSetValue(v interface{}) error {
 	}
 
 	return fmt.Errorf("invalid value for configurable %#v, expecting bool: %v", sf.name, v)
+}
+
+func (sf *BoolFlag) notify() {
+	for _, f := range sf.onChange {
+		f(sf)
+	}
 }
 
 func (sf *BoolFlag) CfValue() interface{} {
@@ -312,6 +347,10 @@ func (sf *BoolFlag) Value() bool {
 // Set the flag's current value.
 func (sf *BoolFlag) SetValue(value bool) {
 	*sf.curValuep = value
+}
+
+func (sf *BoolFlag) RegisterOnChange(f func(*BoolFlag)) {
+	sf.onChange = append(sf.onChange, f)
 }
 
 func (sf *BoolFlag) CfSetPriority(priority configurable.Priority) {
