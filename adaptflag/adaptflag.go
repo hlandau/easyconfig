@@ -5,6 +5,7 @@ package adaptflag
 import "fmt"
 import "flag"
 import "github.com/ogier/pflag"
+import "gopkg.in/alecthomas/kingpin.v2"
 import "gopkg.in/hlandau/configurable.v1"
 import "strings"
 
@@ -183,6 +184,7 @@ func Adapt() {
 		dpn += info.Name
 		flag.Var(info.Value, dpn, info.Usage)
 		pflag.Var(info.Value, dpn, info.Usage)
+		kingpin.Flag(dpn, info.Usage).SetValue(info.Value)
 	})
 }
 
