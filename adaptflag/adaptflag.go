@@ -79,13 +79,18 @@ func (v *value) Set(s string) error {
 
 func (v *value) Get() interface{} {
 	cg, ok := v.c.(interface {
-		CfGetValue() interface{}
+		CfValue() interface{}
 	})
 	if !ok {
 		return nil // ...
 	}
 
-	return cg.CfGetValue()
+	return cg.CfValue()
+}
+
+func (v *value) IsBoolFlag() bool {
+	_, ok := v.Get().(bool)
+	return ok
 }
 
 var adapted = map[interface{}]struct{}{}
