@@ -15,7 +15,7 @@ func Example() {
 	}
 
 	cfg := &Config{}
-	configurable.Register(cstruct.MustNew(cfg))
+	configurable.Register(cstruct.MustNew(cfg, "test"))
 	adaptflag.Adapt()
 	flag.Parse()
 
