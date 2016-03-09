@@ -1,8 +1,8 @@
 package cstruct_test
 
 import "gopkg.in/hlandau/configurable.v1"
-import "gopkg.in/hlandau/configurable.v1/cstruct"
-import "gopkg.in/hlandau/configurable.v1/adaptflag"
+import "gopkg.in/hlandau/easyconfig.v1/cstruct"
+import "gopkg.in/hlandau/easyconfig.v1/adaptflag"
 import flag "github.com/ogier/pflag"
 import "fmt"
 
@@ -15,7 +15,7 @@ func Example() {
 	}
 
 	cfg := &Config{}
-	configurable.Register(cstruct.MustNew(cfg))
+	configurable.Register(cstruct.MustNew(cfg, "test"))
 	adaptflag.Adapt()
 	flag.Parse()
 
