@@ -9,6 +9,17 @@ import "gopkg.in/alecthomas/kingpin.v2"
 import "gopkg.in/hlandau/configurable.v1"
 import "strings"
 
+var shortFlags = map[string]rune{}
+var shortFlagsReverse = map[rune]string{}
+
+func MapShort(name string, s rune) {
+	shortFlags[name] = s
+	if _, ok := shortFlagsReverse[s]; ok {
+		panic(fmt.Sprintf("short flag already mapped: %#v=%#v", name, s))
+	}
+	shortFlagsReverse[s] = name
+}
+
 func name(c configurable.Configurable) (name string, ok bool) {
 	v, ok := c.(interface {
 		CfName() string
@@ -31,6 +42,17 @@ func usageSummaryLine(c configurable.Configurable) (s string, ok bool) {
 	return v.CfUsageSummaryLine(), true
 }
 
+func defaultValue(c configurable.Configurable) (dflt interface{}, ok bool) {
+	v, ok := c.(interface {
+		CfDefaultValue() interface{}
+	})
+	if !ok {
+		return nil, false
+	}
+
+	return v.CfDefaultValue(), true
+}
+
 var errNotSupported = fmt.Errorf("not supported")
 
 type value struct {
@@ -39,14 +61,12 @@ type value struct {
 
 // The flag package uses this to get the default value.
 func (v *value) String() string {
-	cs, ok := v.c.(interface {
-		CfDefaultValue() interface{}
-	})
+	dflt, ok := defaultValue(v.c)
 	if !ok {
 		return "[configurable]"
 	}
 
-	return fmt.Sprintf("%#v", cs.CfDefaultValue())
+	return fmt.Sprintf("%#v", dflt)
 }
 
 func (v *value) Set(s string) error {
@@ -116,11 +136,18 @@ func adapt(path []string, c configurable.Configurable, f AdaptFunc) error {
 	v := &value{c: c}
 	usage, _ := usageSummaryLine(c)
 
+	dfltv, ok := defaultValue(c)
+	dfltstr := ""
+	if ok {
+		dfltstr = fmt.Sprintf("%v", dfltv)
+	}
+
 	f(Info{
-		Name:  name,
-		Usage: usage,
-		Value: v,
-		Path:  path,
+		Name:               name,
+		Usage:              usage,
+		Value:              v,
+		Path:               path,
+		DefaultValueString: dfltstr,
 	})
 
 	adapted[c] = struct{}{}
@@ -130,10 +157,11 @@ func adapt(path []string, c configurable.Configurable, f AdaptFunc) error {
 // Gathered information about a configurable. This information makes it easy to
 // call flag.Var-like functions.
 type Info struct {
-	Name  string
-	Usage string
-	Path  []string
-	Value Value
+	Name               string
+	Usage              string
+	Path               []string
+	Value              Value
+	DefaultValueString string
 }
 
 // Called repeatedly by AdoptWithFunc. Your implementation of this function
@@ -189,7 +217,16 @@ func Adapt() {
 		dpn += info.Name
 		flag.Var(info.Value, dpn, info.Usage)
 		pflag.Var(info.Value, dpn, info.Usage)
-		kingpin.Flag(dpn, info.Usage).SetValue(info.Value)
+		fl := kingpin.Flag(dpn, info.Usage)
+		if info.DefaultValueString != "" {
+			fl = fl.PlaceHolder(info.DefaultValueString)
+		} else {
+			fl = fl.PlaceHolder("\"\"")
+		}
+		if r, ok := shortFlags[dpn]; ok {
+			fl = fl.Short(byte(r))
+		}
+		fl.SetValue(info.Value)
 	})
 }
 
