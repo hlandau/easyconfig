@@ -56,55 +56,6 @@ func (v *value) CfGetValue() interface{} {
 	return v.v.Interface()
 }
 
-func (v *value) CfSetValue(x interface{}) error {
-	xv := reflect.ValueOf(x)
-	if !xv.Type().AssignableTo(v.v.Type()) {
-		// Ensure that []interface{} (from e.g. TOML) can be converted to []T for some T
-		if xv.Type().Kind() == reflect.Slice && v.v.Type().Kind() == reflect.Slice {
-			// Append every element
-			for i := 0; i < xv.Len(); i++ {
-				// TODO: string coercion
-				elem := reflect.ValueOf(xv.Index(i).Interface())
-				if !elem.Type().AssignableTo(v.v.Type().Elem()) {
-					return fmt.Errorf("slice element not assignable with that type: %v, %v", v.v, elem)
-				}
-
-				v.v.Set(reflect.Append(v.v, elem))
-			}
-		}
-
-		// Try string coercion
-		err := coercingSet(v.v, xv)
-		if err != nil {
-			return err
-		}
-	}
-
-	v.v.Set(xv)
-	return nil
-}
-
-func coercingSet(field reflect.Value, newValue reflect.Value) error {
-	if !newValue.Type().AssignableTo(field.Type()) {
-		if newValue.Type().Kind() != reflect.String {
-			return fmt.Errorf("not assignable with that type")
-		}
-
-		pv, err := parseString(newValue.String(), field.Type())
-		if err != nil {
-			return err
-		}
-
-		newValue = reflect.ValueOf(pv)
-		if !newValue.Type().AssignableTo(field.Type()) {
-			return fmt.Errorf("still not assignable with type after string conversion")
-		}
-	}
-
-	field.Set(newValue)
-	return nil
-}
-
 func (v *value) CfDefaultValue() interface{} {
 	return v.defaultValue
 }
@@ -123,28 +74,6 @@ func (v *value) CfGetPriority() configurable.Priority {
 
 func (v *value) CfSetPriority(priority configurable.Priority) {
 	v.priority = priority
-}
-
-var re_no = regexp.MustCompilePOSIX(`^(00?|no?|f(alse)?)$`)
-
-func parseString(s string, t reflect.Type) (interface{}, error) {
-	switch t.Kind() {
-	case reflect.Int:
-		n, err := strconv.ParseInt(s, 0, 32)
-		if err != nil {
-			return nil, err
-		}
-
-		return int(n), nil
-
-	case reflect.Bool:
-		on := (s != "" && !re_no.MatchString(s))
-
-		return on, nil
-
-	default:
-		return s, nil
-	}
 }
 
 // Like New, but panics on failure.
@@ -191,10 +120,8 @@ func New(target interface{}, name string) (c configurable.Configurable, err erro
 
 		vf := v.FieldByIndex(field.Index)
 
-		var dfltv interface{}
-		dfltv, err = parseString(dflt, vf.Type())
-		if err != nil {
-			err = fmt.Errorf("invalid default value: %#v", dflt)
+		if !vf.CanSet() {
+			err = fmt.Errorf("field not assignable")
 			return
 		}
 
@@ -203,17 +130,21 @@ func New(target interface{}, name string) (c configurable.Configurable, err erro
 			name:             name,
 			envVarName:       envVarName,
 			usageSummaryLine: usage,
-			defaultValue:     dfltv,
 		}
 
-		if !vf.CanSet() {
-			err = fmt.Errorf("field not assignable")
-			return
-		}
+		if dflt != "" {
+			var dfltv reflect.Value
+			dfltv, err = parseString(dflt, vf.Type())
+			if err != nil {
+				err = fmt.Errorf("invalid default value: %#v", dflt)
+				return
+			}
 
-		err = vv.CfSetValue(dfltv)
-		if err != nil && dflt != "" {
-			panic(fmt.Sprintf("cannot set default value on field: %v", err))
+			vv.defaultValue = dfltv.Interface()
+			err = vv.CfSetValue(dfltv.Interface())
+			if err != nil {
+				panic(fmt.Sprintf("cannot set default value on field: %v", err))
+			}
 		}
 
 		g.configurables = append(g.configurables, vv)
@@ -230,4 +161,96 @@ func New(target interface{}, name string) (c configurable.Configurable, err erro
 	}
 
 	return g, nil
+}
+
+func (v *value) CfSetValue(nw interface{}) error {
+	return coercingSet(v.v, reflect.ValueOf(nw))
+}
+
+// Sets a field value to a new value, coercing the new value if necessary.
+// Returns an error if coersion is impossible.
+//
+// Setting a slice field to a non-slice value results in the new value getting
+// appended to the existing values. (Although this isn't useful if you're
+// dealing with slices of slices.)
+func coercingSet(field reflect.Value, newValue reflect.Value) error {
+	coerced, err := coerceValue(newValue, &field, field.Type())
+	if err != nil {
+		return err
+	}
+
+	field.Set(coerced)
+	return nil
+}
+
+// Ensures that value is assignable to targetType, converting it if necessary.
+//
+// If value is already assignable to targetType, returns value.
+// If value is not already assignable to targetType, constructs a new
+// reflect.Value that is and returns it, or, failing that, returns an error.
+func coerceValue(value reflect.Value, oldValue *reflect.Value, targetType reflect.Type) (reflect.Value, error) {
+	if value.Type().AssignableTo(targetType) {
+		return value, nil
+	}
+
+	// Ensure that []interface{} (from e.g. TOML) can be converted to []T for some T.
+	if value.Type().Kind() == reflect.Slice && targetType.Kind() == reflect.Slice {
+		slice := reflect.MakeSlice(targetType, 0, 0)
+
+		for i := 0; i < value.Len(); i++ {
+			cv, err := coerceValue(value.Index(i), nil, targetType.Elem())
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("element of slice %#v cannot be coerced to type %v", value.Index(i).Interface(), targetType.Elem())
+			}
+
+			slice = reflect.Append(slice, cv)
+		}
+
+		return slice, nil
+	}
+
+	// The target is a slice but the source isn't, and we have a previous value
+	// we can accumulate from.
+	if targetType.Kind() == reflect.Slice && oldValue != nil {
+		cv, err := coerceValue(value, nil, targetType.Elem())
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("value %#v cannot be coerced to type %v", value, targetType.Elem())
+		}
+
+		return reflect.Append(*oldValue, cv), nil
+	}
+
+	// Parse string.
+	if value.Type().Kind() == reflect.String {
+		return parseString(value.String(), targetType)
+	}
+
+	// Don't know how to coerce.
+	return reflect.Value{}, fmt.Errorf("don't know how to coerce %v (%v) to type %v", value.String(), value.Type(), targetType)
+}
+
+var re_no = regexp.MustCompile(`(?i)(00*|no?|f(alse)?)`)
+
+// Tries to coerce a string to the specified type.
+func parseString(s string, t reflect.Type) (reflect.Value, error) {
+	switch t.Kind() {
+	case reflect.Int:
+		n, err := strconv.ParseInt(s, 0, 32)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+
+		return reflect.ValueOf(int(n)), nil
+
+	case reflect.Bool:
+		on := (s != "" && !re_no.MatchString(s))
+
+		return reflect.ValueOf(on), nil
+
+	case reflect.String:
+		return reflect.ValueOf(s), nil
+
+	default:
+		return reflect.Value{}, fmt.Errorf("cannot coerce string %#v to type %v", s, t)
+	}
 }
