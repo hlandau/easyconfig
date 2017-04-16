@@ -224,7 +224,7 @@ func Adapt() {
 			fl = fl.PlaceHolder("\"\"")
 		}
 		if r, ok := shortFlags[dpn]; ok {
-			fl = fl.Short(byte(r))
+			fl = fl.Short(r)
 		}
 		fl.SetValue(info.Value)
 	})
