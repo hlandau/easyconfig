@@ -19,18 +19,38 @@ func LastConfPath() string {
 }
 
 func LoadPath(confFilePath string) error {
-	var m map[string]interface{}
-	_, err := toml.DecodeFile(confFilePath, &m)
-	if err != nil {
-		return err
+	paths := []string{}
+
+	_, mainStatErr := os.Stat(confFilePath)
+	if mainStatErr == nil {
+		paths = append(paths, confFilePath)
+	}
+	_, globStatErr := os.Stat(confFilePath + ".d")
+	if globStatErr == nil {
+		globResult, err := filepath.Glob(confFilePath + ".d/*.conf")
+		if err != nil {
+			return fmt.Errorf("Globbing error: %s", err)
+		}
+		paths = append(paths, globResult...)
+	}
+	if mainStatErr != nil && globStatErr != nil {
+		return fmt.Errorf("Error finding conf file: %s, %s", mainStatErr, globStatErr)
 	}
 
-	lastConfPath = confFilePath
+	for _, path := range paths {
+		var m map[string]interface{}
+		_, err := toml.DecodeFile(path, &m)
+		if err != nil {
+			return fmt.Errorf("Error decoding %s: %s", path, err)
+		}
 
-	configurable.Visit(func(c configurable.Configurable) error {
-		applyChild(c, m)
-		return nil
-	})
+		lastConfPath = confFilePath
+
+		configurable.Visit(func(c configurable.Configurable) error {
+			applyChild(c, m)
+			return nil
+		})
+	}
 
 	return nil
 }
@@ -70,6 +90,11 @@ func Load(programName string) error {
 
 func pathExists(path string) bool {
 	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+
+	_, err = os.Stat(path + ".d")
 	if err == nil {
 		return true
 	}
