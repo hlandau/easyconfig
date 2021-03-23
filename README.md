@@ -1,7 +1,7 @@
 easyconfig: Easy bindings for configurable
 ==========================================
 
-[![GoDoc](https://godoc.org/gopkg.in/hlandau/easyconfig.v1?status.svg)](https://godoc.org/gopkg.in/hlandau/easyconfig.v1)
+[![godocs.io](https://godocs.io/gopkg.in/hlandau/easyconfig.v1?status.svg)](https://godocs.io/gopkg.in/hlandau/easyconfig.v1) [![No modules](https://www.devever.net/~hl/f/no-modules2.svg) 100% modules-free.](https://www.devever.net/~hl/gomod)
 
 easyconfig provides utilities for use with
 [configurable](https://github.com/hlandau/configurable). It makes it easy to
