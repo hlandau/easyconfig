@@ -17,6 +17,7 @@
 // appropriately as you see fit, for example by calling configurable.Register.
 package cstruct
 
+import "time"
 import "fmt"
 import "reflect"
 import "strings"
@@ -136,7 +137,7 @@ func New(target interface{}, name string) (c configurable.Configurable, err erro
 			var dfltv reflect.Value
 			dfltv, err = parseString(dflt, vf.Type())
 			if err != nil {
-				err = fmt.Errorf("invalid default value: %#v", dflt)
+				err = fmt.Errorf("invalid default value: %#v: %v", dflt, err)
 				return
 			}
 
@@ -250,7 +251,19 @@ func parseString(s string, t reflect.Type) (reflect.Value, error) {
 	case reflect.String:
 		return reflect.ValueOf(s), nil
 
+	case reflect.Int64:
+		if t.String() == "time.Duration" {
+			d, err := time.ParseDuration(s)
+			if err != nil {
+				return reflect.Value{}, err
+			}
+			return reflect.ValueOf(d), nil
+		}
+		break
+
 	default:
-		return reflect.Value{}, fmt.Errorf("cannot coerce string %#v to type %v", s, t)
+		break
 	}
+
+	return reflect.Value{}, fmt.Errorf("cannot coerce string %#v to type %v (%v)", s, t, t.Kind())
 }
