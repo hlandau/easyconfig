@@ -5,7 +5,7 @@ package adaptflag
 import "fmt"
 import "flag"
 import "github.com/ogier/pflag"
-import "gopkg.in/alecthomas/kingpin.v2"
+import "gopkg.in/alecthomas/kingpin/v2"
 import "gopkg.in/hlandau/configurable.v1"
 import "strings"
 
